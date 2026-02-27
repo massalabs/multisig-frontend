@@ -1,0 +1,9 @@
+{
+    "address": "",
+    "node_url": "https://mainnet.massa.net/api/v2",
+    "metadatas": {
+        "TITLE": "Multisig",
+        "DESCRIPTION": "Multisig mainnet",
+        "KEYWORD1": "MULTISIG"
+    }
+}
