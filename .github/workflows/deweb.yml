@@ -38,4 +38,4 @@ jobs:
 
             - name: Get deployed website address
               run: |
-                  echo "Deployed ${ matrix.network } website address: ${{ steps.deploy.outputs.deployed-website }}"
+                  echo "Deployed ${{ matrix.network }} website address: ${{ steps.deploy.outputs.deployed-website }}"
