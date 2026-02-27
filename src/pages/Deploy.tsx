@@ -130,7 +130,8 @@ export default function Deploy() {
         .addU64(upgradeDelayMs)
         .addU64(executionDelayMs);
 
-      console.log('Constructor args (hex):', Buffer.from(args.serialize()).toString('hex'));
+      const argsBytes = args.serialize();
+      console.log('Constructor args (hex):', Array.from(argsBytes instanceof Uint8Array ? argsBytes : new Uint8Array(argsBytes)).map((b) => b.toString(16).padStart(2, '0')).join(''));
       console.log('Owners:', validOwners);
       console.log('Required:', required);
       console.log('UpgradeDelay (ms):', upgradeDelayMs.toString());

@@ -6,7 +6,6 @@ import { Mas } from '@massalabs/massa-web3';
 export default function Header() {
   const {
     availableWallets,
-    wallet,
     provider,
     providers,
     network,
