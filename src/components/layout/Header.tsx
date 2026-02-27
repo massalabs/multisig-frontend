@@ -134,13 +134,6 @@ export default function Header() {
                     </div>
                   )}
 
-                  {/* Wallet indicator */}
-                  {wallet && (
-                    <div className="hidden sm:flex items-center gap-2 px-2 py-1 bg-gray-700/50 rounded">
-                      {getWalletIcon(wallet.name())}
-                    </div>
-                  )}
-
                   {/* Account Selector with Balance */}
                   <div className="relative">
                     <button
