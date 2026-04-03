@@ -14,7 +14,7 @@ import {
 import { Args, Mas } from '@massalabs/massa-web3';
 import { TIME_UNITS } from '../../lib/constants';
 
-type Preset = 'custom' | 'addOwner' | 'removeOwner' | 'replaceOwner' | 'changeRequirement' | 'changeExecutionDelay'
+type Preset = 'transfer' | 'custom' | 'addOwner' | 'removeOwner' | 'replaceOwner' | 'changeRequirement' | 'changeExecutionDelay'
 
 export type DataArgType = 'string' | 'u8' | 'u16' | 'u32' | 'u64' | 'i32' | 'i64' | 'bool' | 'bytes'
 
@@ -92,7 +92,7 @@ export default function SubmitTxForm({
 }: SubmitTxFormProps) {
   const { provider } = useWallet();
 
-  const [preset, setPreset] = useState<Preset>('custom');
+  const [preset, setPreset] = useState<Preset>('transfer');
   const [to, setTo] = useState('');
   const [method, setMethod] = useState('');
   const [value, setValue] = useState('');
@@ -127,7 +127,12 @@ export default function SubmitTxForm({
 
   const isOwner = provider && multisigInfo.owners.includes(provider.address);
 
+  // Transfer-specific fields
+  const [transferTo, setTransferTo] = useState('');
+  const [transferAmount, setTransferAmount] = useState('');
+
   const presets: { value: Preset; label: string }[] = [
+    { value: 'transfer', label: 'Transfer MAS' },
     { value: 'custom', label: 'Custom Operation' },
     { value: 'addOwner', label: 'Add Owner' },
     { value: 'removeOwner', label: 'Remove Owner' },
@@ -209,8 +214,18 @@ export default function SubmitTxForm({
           break;
         }
 
+        case 'transfer':
+          if (!transferTo) throw new Error('Recipient address required');
+          if (!transferAmount || parseFloat(transferAmount) <= 0) throw new Error('Amount must be greater than 0');
+          targetTo = transferTo;
+          targetMethod = '';
+          targetValue = Mas.fromString(transferAmount);
+          break;
+
         case 'custom':
           if (!to) throw new Error('Target address required');
+          if (!to.startsWith('AS')) throw new Error('Target address must be a smart contract (AS...)');
+          if (!method) throw new Error('Method name required');
           try {
             data = serializeDataArgs(dataArgs);
           } catch (e) {
@@ -229,6 +244,8 @@ export default function SubmitTxForm({
       setMethod('');
       setValue('');
       setDataArgs([]);
+      setTransferTo('');
+      setTransferAmount('');
       setNewOwner('');
       setOwnerToRemove('');
       setOldOwner('');
@@ -272,6 +289,32 @@ export default function SubmitTxForm({
           </select>
         </div>
 
+        {/* Transfer Fields */}
+        {preset === 'transfer' && (
+          <>
+            <AddressInput
+              label="Recipient Address"
+              value={transferTo}
+              onChange={setTransferTo}
+              placeholder="AS... or AU..."
+            />
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Amount (MAS)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={transferAmount}
+                onChange={(e) => setTransferAmount(e.target.value)}
+                placeholder="0.00"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </>
+        )}
+
         {/* Custom Operation Fields */}
         {preset === 'custom' && (
           <>
@@ -279,17 +322,17 @@ export default function SubmitTxForm({
               label="Target Address"
               value={to}
               onChange={setTo}
-              placeholder="AS... or AU..."
+              placeholder="AS..."
             />
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
-                Method (optional)
+                Method
               </label>
               <input
                 type="text"
                 value={method}
                 onChange={(e) => setMethod(e.target.value)}
-                placeholder="e.g., transfer"
+                placeholder="e.g., functionName"
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -509,7 +552,7 @@ export default function SubmitTxForm({
           disabled={isSubmitting}
           className="w-full"
         >
-          Submit Operation
+          {isSubmitting ? 'Submitting... (waiting for finalization)' : 'Submit Operation'}
         </Button>
       </div>
     </div>

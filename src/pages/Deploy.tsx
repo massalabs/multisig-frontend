@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../contexts/WalletContext';
 import Button from '../components/common/Button';
@@ -26,6 +26,35 @@ export default function Deploy() {
   const [isDeploying, setIsDeploying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deployedAddress, setDeployedAddress] = useState<string | null>(null);
+  const [wasmHash, setWasmHash] = useState<string | null>(null);
+  const [wasmHashError, setWasmHashError] = useState<string | null>(null);
+
+  // Compute SHA-256 hash of Multisig.wasm (same file as in dist when built)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await fetch('/Multisig.wasm');
+        if (!response.ok) throw new Error('Failed to load WASM');
+        const buffer = await response.arrayBuffer();
+        const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+        if (!cancelled) {
+          setWasmHash(hashHex);
+          setWasmHashError(null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setWasmHash(null);
+          setWasmHashError(err instanceof Error ? err.message : 'Failed to compute WASM hash');
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const timeUnitToMs: Record<TimeUnit, bigint> = {
     minutes: TIME_UNITS.MINUTE,
@@ -365,6 +394,22 @@ export default function Deploy() {
           <p className="text-red-400">{error}</p>
         </div>
       )}
+
+      {/* Multisig.wasm hash */}
+      <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+        <p className="text-sm font-medium text-gray-400 mb-2">Multisig.wasm (SHA-256)</p>
+        {wasmHashError && (
+          <p className="text-amber-400 text-sm">{wasmHashError}</p>
+        )}
+        {wasmHash && (
+          <p className="font-mono text-sm text-gray-300 break-all select-all" title={wasmHash}>
+            {wasmHash}
+          </p>
+        )}
+        {!wasmHash && !wasmHashError && (
+          <p className="text-gray-500 text-sm">Loading hash…</p>
+        )}
+      </div>
 
       {/* Deploy Button */}
       <Button onClick={handleDeploy} loading={isDeploying} className="w-full" size="lg">
