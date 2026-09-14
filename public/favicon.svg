@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="Massa Multisig">
+  <rect width="32" height="32" rx="7" fill="#1a1a2e"/>
+  <path d="M16 3.2 27 7.1v8.6c0 6.5-4.6 11.5-11 13.1-6.4-1.6-11-6.6-11-13.1V7.1Z" fill="#e94560"/>
+  <path d="M10.9 16.3 14.6 20l6.5-7.6" fill="none" stroke="#1a1a2e" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
