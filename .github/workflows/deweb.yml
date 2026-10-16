@@ -29,7 +29,7 @@ jobs:
 
             - name: Deploy to Massa DeWeb (${{ matrix.network }})
               id: deploy
-              uses: massalabs/deweb-gh-action@v0.1.0
+              uses: massalabs/deweb-gh-action@v0.1.2
               with:
                   config_file: ./deweb_cli_config.${{ matrix.network }}.json
                   source_folder: ./dist
